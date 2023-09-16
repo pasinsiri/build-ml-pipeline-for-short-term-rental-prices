@@ -5,7 +5,7 @@ Download from W&B the raw dataset and apply some basic data cleaning, exporting 
 import argparse
 import logging
 import wandb
-
+import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
@@ -18,11 +18,18 @@ def go(args):
 
     # Download input artifact. This will also log that this script is using this
     # particular version of the artifact
-    # artifact_local_path = run.use_artifact(args.input_artifact).file()
+    logger.info("Downloading and reading artifact")
+    artifact_local_path = run.use_artifact(args.input_artifact).file()
+
+    df = pd.read_csv(artifact_local_path, low_memory=False)
 
     ######################
     # YOUR CODE HERE     #
     ######################
+    df['last_review'] = pd.to_datetime(df['last_review'])
+    df = df['price'].between(args.min_price, args.max_price)
+    
+    run.finish()
 
 
 if __name__ == "__main__":
