@@ -6,6 +6,7 @@ import argparse
 import logging
 import wandb
 import pandas as pd
+import os
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 logger = logging.getLogger()
@@ -28,8 +29,18 @@ def go(args):
     ######################
     df['last_review'] = pd.to_datetime(df['last_review'])
     df = df['price'].between(args.min_price, args.max_price)
-    
+    df.to_csv("clean_sample.csv", index=False)
+
+    logger.info("Create new artifact")
+    artifact = wandb.Artifact(
+        args.output_artifact,
+        type=args.output_type,
+        description=args.output_description,
+    )
+    artifact.add_file(args.output_artifact)
+    run.log_artifact(artifact)
     run.finish()
+    os.remove(args.output_artifact)
 
 
 if __name__ == "__main__":
